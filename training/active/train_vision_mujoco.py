@@ -96,6 +96,28 @@ class ReplayBufferSaveCallback(BaseCallback):
         return True
 
 
+class RedFractionLogCallback(BaseCallback):
+    """Log mean red_fraction per episode to TensorBoard.
+    Increasing red_fraction over training = visual attention developing.
+    """
+
+    def __init__(self, verbose=0):
+        super().__init__(verbose)
+        self._ep_red_fractions = []
+
+    def _on_step(self) -> bool:
+        infos = self.locals.get("infos", [])
+        for info in infos:
+            if "red_fraction" in info:
+                self._ep_red_fractions.append(info["red_fraction"])
+            # Log at episode end
+            if info.get("episode") is not None and self._ep_red_fractions:
+                mean_rf = float(np.mean(self._ep_red_fractions))
+                self.logger.record("vision/red_fraction_mean", mean_rf)
+                self._ep_red_fractions = []
+        return True
+
+
 class FrameSaveCallback(BaseCallback):
     """Save a sample camera frame every save_freq steps."""
 
@@ -242,6 +264,7 @@ def main():
     callbacks = CallbackList([
         ReplayBufferSaveCallback(save_dir=SAVE_DIR, save_freq=200_000),
         FrameSaveCallback(frame_dir=FRAME_DIR, save_freq=100_000),
+        RedFractionLogCallback(),
         EvalCurriculumCallback(
             eval_env_fn=make_eval_env,
             save_dir=SAVE_DIR,

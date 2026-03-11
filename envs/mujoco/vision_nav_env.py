@@ -97,9 +97,16 @@ class VisionNavEnv(NavEnv):
         _, reward, terminated, truncated, info = super().step(action)
         obs = self._get_cam_frame()
         # Add red pixel bonus using the freshly rendered frame (channel-last)
-        bonus = self._red_pixel_bonus(self._last_frame)
+        red_mask = (
+            (self._last_frame[:, :, 0] > 150) &
+            (self._last_frame[:, :, 1] < 80)  &
+            (self._last_frame[:, :, 2] < 80)
+        )
+        red_fraction = float(red_mask.sum() / red_mask.size)
+        bonus = float(min(red_fraction * 5.0, 1.0))
         reward += bonus
-        info["red_bonus"] = round(bonus, 4)
+        info["red_fraction"] = red_fraction
+        info["red_bonus"]    = round(bonus, 4)
         return obs, reward, terminated, truncated, info
 
     def close(self):
