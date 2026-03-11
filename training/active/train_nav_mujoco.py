@@ -74,6 +74,7 @@ class EvalCurriculumCallback(EvalCallback):
             **kwargs,
         )
         self.train_env   = train_env
+        self.save_dir    = save_dir
         self._stage      = 0
         self._t_start    = None
 
