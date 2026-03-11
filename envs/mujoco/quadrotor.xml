@@ -26,8 +26,8 @@
 
     <!-- Target marker (mocap body — move via data.mocap_pos[0]) -->
     <body name="target" pos="0 0 1" mocap="true">
-      <geom name="target_geom" type="sphere" size="0.05"
-            rgba="1 0 0 0.5" contype="0" conaffinity="0"/>
+      <geom name="target_geom" type="sphere" size="0.2"
+            rgba="1 0 0 0.8" contype="0" conaffinity="0"/>
     </body>
 
     <!-- Drone body (free joint = 6DOF) -->
@@ -52,8 +52,8 @@
       <site name="rotor2" pos=" 0.0000  0.0397 0.005" size="0.008"/>  <!-- +Y -->
       <site name="rotor3" pos=" 0.0000 -0.0397 0.005" size="0.008"/>  <!-- -Y -->
 
-      <!-- Drone-mounted camera (forward-looking, tilted down 20°) -->
-      <camera name="drone_cam" pos="0.04 0 0.01" euler="-20 0 0" fovy="70"/>
+      <!-- Drone-mounted camera (20° downward tilt, 90° FOV for wider view) -->
+      <camera name="drone_cam" pos="0.04 0 0.01" euler="-20 0 0" fovy="90"/>
     </body>
   </worldbody>
 
