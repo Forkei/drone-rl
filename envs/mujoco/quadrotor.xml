@@ -1,0 +1,79 @@
+<!-- Crazyflie-inspired quadrotor model for MuJoCo
+     Mass: 27g, arm length: 39.7mm, T/W: 2.25
+     + configuration: rotors at ±X, ±Y
+-->
+<mujoco model="quadrotor">
+
+  <option gravity="0 0 -9.81" timestep="0.002" integrator="RK4"/>
+
+  <default>
+    <geom contype="0" conaffinity="0"/>  <!-- drone has no collision by default -->
+  </default>
+
+  <visual>
+    <headlight ambient="0.4 0.4 0.4" diffuse="0.8 0.8 0.8" specular="0.1 0.1 0.1"/>
+    <rgba haze="0.15 0.25 0.35 1"/>
+  </visual>
+
+  <worldbody>
+    <!-- Directional light -->
+    <light name="sun" directional="true" pos="0 0 5" dir="0 -0.3 -1"
+           ambient="0.3 0.3 0.3" diffuse="0.8 0.8 0.8" specular="0.2 0.2 0.2"/>
+
+    <!-- Ground plane (visual only for rendering) -->
+    <geom name="floor" type="plane" size="5 5 0.1" rgba="0.6 0.7 0.5 1"
+          contype="1" conaffinity="1"/>
+
+    <!-- Target marker (mocap body — move via data.mocap_pos[0]) -->
+    <body name="target" pos="0 0 1" mocap="true">
+      <geom name="target_geom" type="sphere" size="0.05"
+            rgba="1 0 0 0.5" contype="0" conaffinity="0"/>
+    </body>
+
+    <!-- Drone body (free joint = 6DOF) -->
+    <body name="drone" pos="0 0 1">
+      <freejoint name="root"/>
+      <inertial mass="0.027"
+                 pos="0 0 0"
+                 diaginertia="1.4e-5 1.4e-5 2.17e-5"/>
+
+      <!-- Central body -->
+      <geom type="box" size="0.04 0.04 0.012" rgba="0.2 0.4 0.8 1"/>
+
+      <!-- Arms (+X, -X, +Y, -Y) -->
+      <geom type="capsule" fromto=" 0.0397 0 0  0.0 0 0" size="0.005" rgba="0.5 0.5 0.5 1"/>
+      <geom type="capsule" fromto="-0.0397 0 0  0.0 0 0" size="0.005" rgba="0.5 0.5 0.5 1"/>
+      <geom type="capsule" fromto="0  0.0397 0  0 0.0 0" size="0.005" rgba="0.5 0.5 0.5 1"/>
+      <geom type="capsule" fromto="0 -0.0397 0  0 0.0 0" size="0.005" rgba="0.5 0.5 0.5 1"/>
+
+      <!-- Rotor sites (thrust applied here in body-z direction) -->
+      <site name="rotor0" pos=" 0.0397  0.0000 0.005" size="0.008"/>  <!-- +X -->
+      <site name="rotor1" pos="-0.0397  0.0000 0.005" size="0.008"/>  <!-- -X -->
+      <site name="rotor2" pos=" 0.0000  0.0397 0.005" size="0.008"/>  <!-- +Y -->
+      <site name="rotor3" pos=" 0.0000 -0.0397 0.005" size="0.008"/>  <!-- -Y -->
+
+      <!-- Drone-mounted camera (forward-looking, tilted down 20°) -->
+      <camera name="drone_cam" pos="0.04 0 0.01" euler="-20 0 0" fovy="70"/>
+    </body>
+  </worldbody>
+
+  <!-- 4 thrust actuators: force in site's local z (body z when drone is level)    -->
+  <!-- Yaw torque ratio: km/kf = 7.94e-12 / 3.16e-10 = 0.02513 m (Crazyflie)       -->
+  <!-- m0(+X) & m3(-Y) spin CCW (+yaw), m1(-X) & m2(+Y) spin CW (-yaw)             -->
+  <!-- max 0.149N per motor → T/W 2.25 total for 27g drone                          -->
+  <actuator>
+    <general name="m0" site="rotor0" gear="0 0 1 0 0  0.02513" ctrllimited="true" ctrlrange="0 0.149"/>
+    <general name="m1" site="rotor1" gear="0 0 1 0 0 -0.02513" ctrllimited="true" ctrlrange="0 0.149"/>
+    <general name="m2" site="rotor2" gear="0 0 1 0 0 -0.02513" ctrllimited="true" ctrlrange="0 0.149"/>
+    <general name="m3" site="rotor3" gear="0 0 1 0 0  0.02513" ctrllimited="true" ctrlrange="0 0.149"/>
+  </actuator>
+
+  <!-- Sensors -->
+  <sensor>
+    <framepos   name="pos"    objtype="body" objname="drone"/>
+    <framequat  name="quat"   objtype="body" objname="drone"/>
+    <framelinvel name="vel"   objtype="body" objname="drone"/>
+    <frameangvel name="angvel" objtype="body" objname="drone"/>
+  </sensor>
+
+</mujoco>

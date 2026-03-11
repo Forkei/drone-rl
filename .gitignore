@@ -1,0 +1,23 @@
+# Models (large binaries)
+models*/
+*.zip
+*.pkl
+
+# Logs (TensorBoard, regeneratable)
+logs*/
+
+# Generated images / plots
+*.png
+benchmark_results/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.conda/
+
+# Claude internals
+.claude/
+
+# Misc scratch
+*.txt
